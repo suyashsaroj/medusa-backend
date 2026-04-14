@@ -1,0 +1,11 @@
+node_modules
+dist
+.medusa
+.env
+.env.local
+.env.production
+postgres_data
+.git
+*.log
+coverage
+.DS_Store
