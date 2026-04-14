@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies with npm ci (faster, respects lock file)
+RUN npm ci
 
 # Copy source code
 COPY . .
@@ -19,11 +19,14 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Copy package files and install production dependencies
+# Copy package files
 COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
 
-# Copy built files from builder
+# Install only production dependencies
+RUN npm ci --omit=dev
+
+# Copy built files and node_modules from builder
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/medusa-config.ts ./medusa-config.ts
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
