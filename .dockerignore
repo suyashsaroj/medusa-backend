@@ -1,11 +1,8 @@
 node_modules
-dist
-.medusa
-.env
-.env.local
-.env.production
-postgres_data
+npm-debug.log
 .git
-*.log
-coverage
+.gitignore
+.env
+.env.example
+dist
 .DS_Store
