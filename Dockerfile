@@ -5,14 +5,17 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN npm install --omit=dev
+# Install all dependencies (dev deps needed for build)
+RUN npm install
 
 # Copy source code
 COPY . .
 
 # Build the application
 RUN npx medusa build
+
+# Remove dev dependencies to slim down image
+RUN npm prune --omit=dev
 
 # Expose port
 EXPOSE 9000
