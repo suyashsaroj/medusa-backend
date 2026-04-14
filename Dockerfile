@@ -1,35 +1,21 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies with npm ci (faster, respects lock file)
-RUN npm ci
+# Install all dependencies (dev deps needed for build)
+RUN npm install
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN npx medusa build
 
-# ─── Production Stage ─────────────────────────────────────────
-FROM node:20-alpine AS production
-
-WORKDIR /app
-
-# Copy package files
-COPY package.json package-lock.json* ./
-
-# Install only production dependencies
-RUN npm ci --omit=dev
-
-# Copy built files and node_modules from builder
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/medusa-config.ts ./medusa-config.ts
-COPY --from=builder /app/tsconfig.json ./tsconfig.json
+# Remove dev dependencies to slim down image
+RUN npm prune --omit=dev
 
 # Expose port
 EXPOSE 9000
