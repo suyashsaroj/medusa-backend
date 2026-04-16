@@ -2,39 +2,39 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies first (leverage Docker cache)
+# Install dependencies (leverage Docker layer cache)
 COPY package.json package-lock.json* ./
-RUN npm ci --quiet --no-audit --no-fund
+RUN npm install --prefer-offline --no-audit --no-fund
 
 # Copy source code
 COPY . .
 
-# Build the application
+# Build backend only — skip admin dashboard (saves ~5 min)
+# Admin can be served separately or via Medusa's hosted admin
+ENV DISABLE_MEDUSA_ADMIN=true
 RUN npx medusa build
 
-# Stage 2: Runtime
-FROM node:20-alpine AS runner
+# ─── Production Stage ─────────────────────────────────────────
+FROM node:20-alpine
 
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Install only production dependencies
-COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev --quiet --no-audit --no-fund
+# Copy package.json and node_modules from builder (single install)
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
 
-# Copy necessary artifacts
-COPY --from=builder /app/dist ./dist
+# Copy built output
 COPY --from=builder /app/.medusa ./.medusa
 COPY --from=builder /app/medusa-config.ts ./medusa-config.ts
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
-# Expose port
+# Prune dev dependencies to slim down image
+RUN npm prune --omit=dev --no-audit --no-fund 2>/dev/null; true
+
 EXPOSE 9000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost:9000/health || exit 1
 
-# Start Medusa
 CMD ["npx", "medusa", "start"]
-
