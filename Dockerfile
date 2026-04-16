@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install dependencies (leverage Docker layer cache)
 COPY package.json package-lock.json* ./
-RUN npm install --prefer-offline --no-audit --no-fund
+RUN npm install --prefer-offline --no-audit --no-fund && npm ci --prefer-offline --no-audit --no-fund
 
 # Copy source code
 COPY . .
