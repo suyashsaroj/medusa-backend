@@ -21,8 +21,8 @@ ENV NODE_ENV=production
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 
-# Copy built output
-COPY --from=builder /app/.medusa ./.medusa
+# Copy built output (dist only, not .medusa)
+COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/medusa-config.ts ./medusa-config.ts
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
 COPY --from=builder /app/src ./src
@@ -32,7 +32,5 @@ RUN npm prune --omit=dev --no-audit --no-fund 2>/dev/null; true
 
 EXPOSE 9000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:9000/health || exit 1
-
-CMD ["npx", "medusa", "start"]
+# Start Medusa without admin UI (v2 doesn't require it in backend)
+CMD ["npx", "medusa", "start", "--skip-admin"]
