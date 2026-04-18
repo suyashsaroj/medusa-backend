@@ -42,10 +42,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    command: sh -c "npx medusa db:migrate && npx medusa start"
     ports:
       - "9000:9000"
     environment:
-      DATABASE_URL: postgres://medusa_user:medusa_pass@postgres:5432/medusa_backend
+      DATABASE_URL: postgres://medusa_user:medusa_pass@postgres:5432/medusa_backend?sslmode=disable
       REDIS_URL: redis://redis:6379
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
@@ -62,9 +63,7 @@ services:
       SHIPROCKET_CHANNEL_ID: ${SHIPROCKET_CHANNEL_ID}
       SHIPROCKET_PICKUP_LOCATION: ${SHIPROCKET_PICKUP_LOCATION:-Primary}
       SHIPROCKET_WEBHOOK_TOKEN: ${SHIPROCKET_WEBHOOK_TOKEN}
-    volumes:
-      - .:/app
-      - /app/node_modules
+
 
 volumes:
   postgres_data:
