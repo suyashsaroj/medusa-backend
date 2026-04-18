@@ -9,9 +9,6 @@ RUN npm install --prefer-offline --no-audit --no-fund && npm install @rollup/rol
 # Copy source code
 COPY . .
 
-# Build backend only — skip admin dashboard (saves ~5 min)
-# Admin can be served separately or via Medusa's hosted admin
-ENV DISABLE_MEDUSA_ADMIN=true
 RUN npx medusa build
 
 # ─── Production Stage ─────────────────────────────────────────
