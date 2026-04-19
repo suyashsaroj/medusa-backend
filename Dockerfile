@@ -37,5 +37,6 @@ EXPOSE 9000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
   CMD wget --quiet --tries=1 --spider http://localhost:9000/health || exit 1
 
-# Start Medusa
-CMD ["npx", "medusa", "start"]
+# Start Medusa with automated migrations
+CMD ["sh", "-c", "npx medusa db:migrate && npx medusa start"]
+
