@@ -6,15 +6,15 @@ services:
     container_name: medusa-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: medusa_user
-      POSTGRES_PASSWORD: medusa_pass
-      POSTGRES_DB: medusa_backend
+      POSTGRES_USER: ${POSTGRES_USER:-medusa_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medusa_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-medusa_backend}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U medusa_user -d medusa_backend"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-medusa_user} -d $${POSTGRES_DB:-medusa_backend}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,6 +25,8 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -67,3 +69,4 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
